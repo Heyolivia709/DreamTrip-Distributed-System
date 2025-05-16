@@ -124,7 +124,7 @@ services:
     ports:
       - "8004:8004"
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/dream_trip
       - REDIS_URL=redis://redis:6379
     depends_on:

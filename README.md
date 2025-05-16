@@ -1,23 +1,14 @@
 # Dream Trip - Distributed Intelligent Travel Planning System
 
-> A distributed travel planning system based on microservices architecture, showcasing modern distributed system design patterns and best practices
-
-[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.119.0-green.svg)](https://fastapi.tiangolo.com/)
-[![Kafka](https://img.shields.io/badge/Kafka-Event%20Driven-orange.svg)](https://kafka.apache.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
+A distributed travel planning system based on microservices architecture, providing route planning, weather forecasting, POI recommendations, and AI-powered intelligent summaries.
 
 ## 🎯 Key Features
 
-- 🏗️ **Microservices Architecture** - 5 independent microservices, independently deployable and scalable
-- 🔄 **Event-Driven** - Kafka message queue for asynchronous processing
-- 🚀 **API Gateway** - Unified entry point and service orchestration
-- 💾 **Distributed Cache** - Redis multi-level caching with 80%+ hit rate
-- 🛡️ **Fault Tolerance** - Service degradation, circuit breaker, and timeout control
-
----
+-  **Microservices Architecture** - 5 independent microservices, independently deployable and scalable
+-  **Event-Driven** - Kafka message queue for asynchronous processing
+-  **API Gateway** - Unified entry point and service orchestration
+-  **Distributed Cache** - Redis multi-level caching
+-  **Fault Tolerance** - Service degradation and timeout control
 
 ## 🏗️ System Architecture
 
@@ -59,92 +50,79 @@
 | **POI Service** | 8003 | Point of interest recommendations (Google Places API) |
 | **AI Service** | 8004 | Intelligent summary (Google Gemini API) |
 
----
-
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Python 3.13+
-- Docker & Docker Compose
-- Redis
-
-### 1. Clone the Repository
-
+### 1. Clone Repository
 ```bash
 git clone <repository-url>
 cd dream_trip
 ```
 
 ### 2. Configure Environment Variables
-
-⚠️ **Important Security Notice**: Never commit your `.env` file to version control!
-
 ```bash
-# Copy the example file
 cp env.example .env
-
-# Edit .env and fill in your API Keys
-nano .env  # or use your preferred editor
+# Edit .env file and add your API Keys (see Required API Keys section below)
 ```
 
-**Required API Keys:**
-- `GOOGLE_MAPS_API_KEY` - For route planning and geocoding
-- `GOOGLE_PLACES_API_KEY` - For points of interest recommendations  
-- `OPENWEATHER_API_KEY` - For weather forecast data
-- `GEMINI_API_KEY` - For AI-powered trip summaries
-
-**Get your API keys:**
-- [Google Maps API](https://developers.google.com/maps/documentation/javascript/get-api-key)
-- [Google Places API](https://developers.google.com/maps/documentation/places/web-service/get-api-key)
-- [OpenWeather API](https://openweathermap.org/api)
-- [Google Gemini API](https://ai.google.dev/gemini-api/docs/api-key)
-
-**Security Best Practices:**
-- ✅ The `.env` file is automatically ignored by Git (see `.gitignore`)
-- ✅ Only share `env.example` with other developers
-- ✅ Never commit real API keys to version control
-- ✅ Consider rotating API keys if accidentally exposed
-
-### 3. Start Infrastructure Services
-
+### 3. Start Services
 ```bash
-# Start PostgreSQL, Kafka, Zookeeper
-docker-compose up -d postgres kafka zookeeper
-
-# Start Redis (if not installed)
-brew install redis
-brew services start redis
-```
-
-### 4. Start Microservices
-
-```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r gateway/requirements.txt
-
-# Start all services
 ./start.sh
 ```
 
-### 5. Access Services
+### 4. Access System
+- **API Documentation**: http://204.236.144.38:8000/docs
+- **Health Check**: http://204.236.144.38:8000/health
 
-- **API Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/health
-- **Swagger UI**: Test all endpoints in API documentation
+### 5. Test the System
+```bash
+# Run comprehensive API tests
+./scripts/test_api.sh
 
----
+# Test Kafka integration
+./scripts/kafka_test.sh
+```
+
+## 🔑 Required API Keys
+
+**⚠️ Important**: All services require valid API keys to function properly. Without API keys, services will fail.
+
+Configure in `.env` file:
+- `GOOGLE_MAPS_API_KEY` - Google Maps API (for route planning)
+- `GOOGLE_PLACES_API_KEY` - Google Places API (for POI recommendations)
+- `OPENWEATHER_API_KEY` - OpenWeather API (for weather forecasts)
+- `GOOGLE_AI_API_KEY` - Google Gemini API (for AI summaries)
+
+### How to Get API Keys:
+1. **Google Maps/Places**: https://console.cloud.google.com/
+2. **OpenWeather**: https://openweathermap.org/api
+3. **Google Gemini**: https://makersuite.google.com/app/apikey
+
+## 🛠️ Management Commands
+
+```bash
+# Start services
+./start.sh
+
+# Stop services
+./stop.sh
+
+# Test API
+./scripts/test_api.sh
+
+# Test Kafka
+./scripts/kafka_test.sh
+
+# Docker commands
+docker-compose up -d    # Start
+docker-compose down     # Stop
+docker-compose logs -f  # View logs
+```
 
 ## 📡 API Usage Examples
 
 ### Create Trip Plan
-
 ```bash
-curl -X POST http://localhost:8000/api/trip/plan \
+curl -X POST http://204.236.144.38:8000/api/trip/plan \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 1,
@@ -155,125 +133,48 @@ curl -X POST http://localhost:8000/api/trip/plan \
   }'
 ```
 
-**Response**:
-```json
-{
-  "trip_id": 1234567890,
-  "status": "processing"
-}
-```
-
 ### Query Trip Details
-
 ```bash
-curl http://localhost:8000/api/trip/1234567890
+curl http://204.236.144.38:8000/api/trip/1
 ```
-
-**Response**:
-```json
-{
-  "trip_id": 1234567890,
-  "status": "completed",
-  "route": { "distance": "1,213 km", "duration": "11 hours" },
-  "weather": [...],
-  "pois": [...],
-  "ai_summary": {...}
-}
-```
-
----
-
-## 🔧 Tech Stack
-
-### Backend Framework
-- **FastAPI** - High-performance async web framework
-- **SQLAlchemy** - ORM
-- **Pydantic** - Data validation
-
-### Data Storage
-- **PostgreSQL** - Relational database
-- **Redis** - Distributed cache
-- **Kafka** - Message queue
-
-### External APIs
-- Google Maps API
-- Google Places API
-- OpenWeather API
-- Google Gemini API
-
----
-
-## 📊 Project Structure
-
-```
-dream_trip/
-├── gateway/                    # API Gateway (modular architecture)
-│   ├── routers/               # Router layer
-│   ├── services/              # Business logic layer
-│   └── repositories/          # Data access layer
-│
-├── route_service/             # Route planning service
-├── weather_service/           # Weather forecast service
-├── poi_service/               # POI recommendation service
-├── ai_summary_service/        # AI summary service
-│
-├── docs/                      # Detailed documentation
-│   └── USAGE_GUIDE.md        # Usage guide
-│
-├── docker-compose.yml         # Docker orchestration
-├── start.sh                   # Startup script
-├── stop.sh                    # Stop script
-└── test_api.sh               # API testing script
-```
-
----
 
 ## 🧪 Testing
 
-### Run Complete Tests
+- **Complete API Test**: `./scripts/test_api.sh` - Test all services and features
+- **Kafka Integration Test**: `./scripts/kafka_test.sh` - Test event-driven functionality
 
+## 🔧 Troubleshooting
+
+### Common Issues:
+
+1. **Services fail to start**
+   ```bash
+   # Check if ports are available
+   docker-compose down
+   ./start.sh
+   ```
+
+2. **API key errors**
+   - Verify all API keys are correctly set in `.env` file
+   - Check API key permissions and quotas
+   - Restart services after updating API keys: `docker-compose restart`
+
+3. **Database connection issues**
+   ```bash
+   # Reset database
+   docker-compose down -v
+   ./start.sh
+   ```
+
+4. **Check service logs**
+   ```bash
+   docker-compose logs -f [service_name]
+   # e.g., docker-compose logs -f gateway
+   ```
+
+### Health Check:
 ```bash
-./test_api.sh
+curl http://204.236.144.38:8000/health
 ```
-
-### Test Coverage
-- ✅ Health check (all services)
-- ✅ Create trip plan
-- ✅ Query trip details
-- ✅ Direct microservice calls
-- ✅ 11 tests, 100% pass rate
-
----
-
-## 📊 Service Management
-
-### Start Services
-
-```bash
-./start.sh
-```
-
-### Stop Services
-
-```bash
-./stop.sh
-```
-
-### Check Service Status
-
-```bash
-# View running services
-ps aux | grep "python3 -m uvicorn"
-
-# Health check
-curl http://localhost:8000/health
-```
-
----
-
-## 📚 Detailed Documentation
-
-- 📘 [Usage Guide](docs/USAGE_GUIDE.md) - Detailed features, testing guide, distributed features demo
-- 📗 [Gateway Architecture](gateway/ARCHITECTURE.md) - Modular architecture details
-- 📙 [Environment Configuration](env.example) - Environment variable configuration examples
+Should return: `{"status":"healthy","services":{"route":"healthy","weather":"healthy","poi":"healthy","ai":"healthy"}}`
 
