@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class RouteRequest(BaseModel):
-    """路线请求模型"""
+    """Route request model"""
     origin: str
     destination: str
     mode: str = "driving"  # driving, walking, transit
@@ -14,7 +14,7 @@ class RouteRequest(BaseModel):
 
 
 class RouteResponse(BaseModel):
-    """路线响应模型"""
+    """Route response model"""
     origin: str
     destination: str
     distance: str
@@ -25,12 +25,12 @@ class RouteResponse(BaseModel):
 
 
 class GeocodingRequest(BaseModel):
-    """地理编码请求"""
+    """Geocoding request"""
     address: str
 
 
 class GeocodingResponse(BaseModel):
-    """地理编码响应"""
+    """Geocoding response"""
     address: str
     latitude: float
     longitude: float
@@ -38,7 +38,7 @@ class GeocodingResponse(BaseModel):
 
 
 class ReverseGeocodingResponse(BaseModel):
-    """反向地理编码响应"""
+    """Reverse geocoding response"""
     latitude: float
     longitude: float
     address: str
@@ -46,7 +46,7 @@ class ReverseGeocodingResponse(BaseModel):
 
 
 class NearbyPlacesRequest(BaseModel):
-    """附近地点请求"""
+    """Nearby places request"""
     lat: float
     lng: float
     radius: int = 5000
@@ -54,7 +54,7 @@ class NearbyPlacesRequest(BaseModel):
 
 
 class Place(BaseModel):
-    """地点模型"""
+    """Place model"""
     name: str
     place_id: Optional[str] = None
     rating: Optional[float] = None
@@ -64,6 +64,6 @@ class Place(BaseModel):
 
 
 class NearbyPlacesResponse(BaseModel):
-    """附近地点响应"""
+    """Nearby places response"""
     places: List[Place]
 

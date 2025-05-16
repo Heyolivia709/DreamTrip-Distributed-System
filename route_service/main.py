@@ -53,7 +53,7 @@ async def health_check(db: Session = Depends(get_db)):
 
 @app.post("/route", response_model=RouteResponse)
 async def get_route(request: RouteRequest):
-    """Get 路线规划"""
+    """Get route planning"""
     try:
         service = RouteService(get_gmaps(), get_redis())
         return service.get_route(request)
@@ -64,7 +64,7 @@ async def get_route(request: RouteRequest):
 
 @app.get("/geocode")
 async def geocode_address(address: str):
-    """地理编码 - 将地址转换为坐标"""
+    """Geocoding - convert address to coordinates"""
     try:
         service = RouteService(get_gmaps(), get_redis())
         return service.geocode(address)
@@ -75,7 +75,7 @@ async def geocode_address(address: str):
 
 @app.get("/reverse-geocode")
 async def reverse_geocode(lat: float, lng: float):
-    """反向地理编码 - 将坐标转换为地址"""
+    """Reverse geocoding - convert coordinates to address"""
     try:
         service = RouteService(get_gmaps(), get_redis())
         return service.reverse_geocode(lat, lng)
@@ -91,7 +91,7 @@ async def get_nearby_places(
     radius: int = 5000, 
     place_type: str = "tourist_attraction"
 ):
-    """Get 附近地点"""
+    """Get nearby places"""
     try:
         service = RouteService(get_gmaps(), get_redis())
         places = service.get_nearby_places(lat, lng, radius, place_type)

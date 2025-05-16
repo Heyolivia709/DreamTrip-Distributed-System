@@ -1,6 +1,3 @@
-"""
-Route Service - 依赖注入
-"""
 import logging
 from typing import Optional
 
@@ -24,10 +21,12 @@ class Dependencies:
     
     @classmethod
     def get_gmaps_client(cls) -> Optional[googlemaps.Client]:
-        """Get  Google Maps 客户端"""
+        """Get Google Maps client"""
         if cls._gmaps_client is None and settings.google_maps_api_key:
             try:
-                cls._gmaps_client = googlemaps.Client(key=settings.google_maps_api_key)
+                cls._gmaps_client = googlemaps.Client(
+                    key=settings.google_maps_api_key
+                )
                 logger.info("Google Maps client initialized")
             except Exception as e:
                 logger.error(f"Failed to initialize Google Maps client: {e}")
