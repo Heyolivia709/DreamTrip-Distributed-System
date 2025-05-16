@@ -1,14 +1,4 @@
 # Gateway Modular Architecture Documentation
-
-## 📊 Refactoring Overview
-
-**Before:** `main.py` with 540 lines, all code mixed together  
-**After:** `main.py` with 65 lines, clear layered code, easy to maintain
-
-Refactored from monolithic file to **standard three-tier architecture**: Router Layer → Business Logic Layer → Data Access Layer
-
----
-
 ## 📁 Directory Structure
 
 ```
@@ -293,27 +283,3 @@ uvicorn main:app --reload --port 8000
 ```
 
 ---
-
-## 📚 Further Reading
-
-- [FastAPI Dependency Injection](https://fastapi.tiangolo.com/tutorial/dependencies/)
-- [Three-Tier Architecture Pattern](https://en.wikipedia.org/wiki/Multitier_architecture)
-- [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html)
-- [Domain-Driven Design (DDD)](https://en.wikipedia.org/wiki/Domain-driven_design)
-
----
-
-## 📊 Code Statistics
-
-| File | Lines | Responsibility |
-|------|-------|----------------|
-| main.py | 65 | Application entry point |
-| routers/health.py | 30 | Health check |
-| routers/trip.py | 110 | Trip planning API |
-| services/service_client.py | 80 | Microservice client |
-| services/trip_service.py | 320 | Core business logic |
-| repositories/trip_repository.py | 230 | Database operations |
-
-**Total:** 835 lines (modular, clear) vs original 540 lines (messy)
-
-Although the total line count increased, code quality, maintainability, and testability have greatly improved!

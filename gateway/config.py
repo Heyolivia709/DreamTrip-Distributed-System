@@ -1,19 +1,18 @@
-import os
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """网关服务配置"""
+    """Gateway service configuration"""
     
     # Database configuration
     database_url: str = "postgresql://postgres:password@localhost:5432/dream_trip"
     redis_url: str = "redis://localhost:6379"
     
-    # Kafka配置
+    # Kafka configuration
     kafka_broker: str = "localhost:9092"
     
-    # 微服务URL
+    # Microservice URLs
     route_service_url: str = "http://localhost:8001"
     weather_service_url: str = "http://localhost:8002"
     poi_service_url: str = "http://localhost:8003"

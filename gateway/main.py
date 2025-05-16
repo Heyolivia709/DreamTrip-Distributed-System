@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import health_router, trip_router
 
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -34,7 +33,6 @@ async def lifespan(app: FastAPI):
     logger.info("👋 Shutting down Dream Trip API Gateway...")
 
 
-# Create FastAPI app
 app = FastAPI(
     title="Dream Trip API Gateway",
     description="Distributed Travel Planning System Gateway - Modular Architecture",

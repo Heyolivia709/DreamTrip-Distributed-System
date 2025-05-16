@@ -29,4 +29,3 @@ async def health_check():
         health_status["services"][service_name] = status
     
     return health_status
-

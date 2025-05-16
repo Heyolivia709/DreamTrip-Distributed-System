@@ -1,207 +1,96 @@
-# Gateway Service - Dream Trip
+# Gateway Service - API Gateway & Service Orchestration
 
-API Gateway for the Distributed Travel Planning System - **Modular Architecture**
+## 🎯 Overview
 
----
-
-## 🚀 Quick Start
-
-### Start Service
-```bash
-cd gateway
-python3 main.py
-```
-
-### Test Endpoints
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Create trip plan
-curl -X POST http://localhost:8000/api/trip/plan \
-  -H "Content-Type: application/json" \
-  -d '{
-    "origin": "Shanghai",
-    "destination": "Hangzhou",
-    "preferences": ["nature", "history"],
-    "duration": 2
-  }'
-
-# Get trip details
-curl http://localhost:8000/api/trip/{trip_id}
-
-# Get trip list
-curl http://localhost:8000/api/trips
-```
-
----
-
-## 📁 Project Structure
-
-```
-gateway/
-├── main.py                    # Application entry point (65 lines)
-├── config.py                  # Configuration management
-├── models.py                  # Database models
-├── schemas.py                 # Request/Response models
-├── dependencies.py            # Dependency injection
-│
-├── routers/                   # Router layer
-│   ├── health.py             # GET / and /health
-│   └── trip.py               # Travel planning routes
-│
-├── services/                  # Business logic layer
-│   ├── service_client.py     # Microservice client
-│   ├── trip_service.py       # Trip planning business logic
-│   └── kafka_producer.py     # Kafka event producer
-│
-└── repositories/              # Data access layer
-    └── trip_repository.py    # Database operations
-```
-
----
+The Gateway service acts as the central entry point for the Dream Trip distributed system, providing API routing, service orchestration, and data aggregation.
 
 ## 🏗️ Architecture
 
-### Three-Tier Architecture
-
 ```
-┌──────────────────────────────────────────────┐
-│  Routers (Router Layer)                      │
-│  - Handle HTTP requests                      │
-│  - Parameter validation                      │
-│  - Dependency injection                      │
-└────────────────┬─────────────────────────────┘
-                 │
-                 ↓
-┌──────────────────────────────────────────────┐
-│  Services (Business Logic Layer)             │
-│  - Core business logic                       │
-│  - Service orchestration                     │
-│  - Transaction management                    │
-└────────────────┬─────────────────────────────┘
-                 │
-                 ↓
-┌──────────────────────────────────────────────┐
-│  Repositories (Data Access Layer)            │
-│  - Database CRUD operations                  │
-│  - Data persistence                          │
-│  - Query encapsulation                       │
-└──────────────────────────────────────────────┘
+Client Request → Gateway (8000) → Microservices
+                     ↓
+                [Route, Weather, POI, AI Services]
+                     ↓
+                [PostgreSQL, Redis, Kafka]
 ```
 
----
+## 📁 Project Structure
 
-## 🔑 Key Features
+### Core Services
+- **API Gateway** (8000) - Request routing and service orchestration
+- **Route Service** (8001) - Route planning via Google Maps API
+- **Weather Service** (8002) - Weather forecasts via OpenWeather API
+- **POI Service** (8003) - Point of interest recommendations
+- **AI Service** (8004) - Intelligent trip summaries via Gemini API
 
-### 1. Service Orchestration
-- Calls 4 microservices in parallel (Route, Weather, POI, AI)
-- Aggregates results
-- Asynchronous processing using background tasks
+### Infrastructure
+- **PostgreSQL** (5432) - Primary database
+- **Redis** (6379) - Distributed caching
+- **Kafka** (9092) - Event-driven messaging
 
-### 2. Distributed Cache
-- Redis priority (Cache-Aside pattern)
-- Database fallback
-- 80%+ cache hit rate
+## 🗂️ Gateway Code Structure
 
-### 3. Event-Driven
-- Publishes events via Kafka
-- Decouples event producers and consumers
-- Supports multiple event subscribers
+### `/routers/` - API Endpoints
+- `trip.py` - Trip planning endpoints
+- `health.py` - Health check endpoints
 
-### 4. Modular Design
-- Three-tier architecture (Router → Service → Repository)
-- Clear separation of concerns
-- Easy to test and maintain
+### `/services/` - Business Logic
+- `trip_service.py` - Main coordinator 
+- `trip_plan_service.py` - Trip plan CRUD & caching
+- `trip_processing_service.py` - Background processing
+- `service_client.py` - Microservice communication
+- `kafka_producer.py` - Event messaging
 
----
+### `/repositories/` - Data Access
+- `base_repository.py` - Common database operations
+- `trip_repository.py` - Trip plan data access
+- `route_repository.py` - Route data access
+- `weather_repository.py` - Weather data access
+- `poi_repository.py` - POI data access
+- `ai_repository.py` - AI summary data access
 
-## 📊 Key Endpoints
+## 🔄 Request Flow
 
-### Health Check
+1. **Client Request** → Gateway API endpoint
+2. **Trip Creation** → `trip_service.py` coordinates
+3. **Plan Management** → `trip_plan_service.py` handles CRUD
+4. **Background Processing** → `trip_processing_service.py` orchestrates
+5. **Microservice Calls** → `service_client.py` communicates
+6. **Event Publishing** → `kafka_producer.py` sends events
+7. **Data Persistence** → Repository layer saves to database
 
-**GET /** or **GET /health**
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-10-15T10:30:00",
-  "services": {
-    "route": "healthy",
-    "weather": "healthy",
-    "poi": "healthy",
-    "ai": "healthy"
-  }
-}
+## 🚀 Key Features
+
+- **Service Orchestration** - Coordinates multiple microservices
+- **Event-Driven Architecture** - Kafka for asynchronous processing
+- **Distributed Caching** - Redis for performance optimization
+- **Fault Tolerance** - Graceful degradation when services fail
+- **Modular Design** - Clean separation of concerns
+
+## 📡 API Endpoints
+
+- `POST /api/trip/plan` - Create trip plan
+- `GET /api/trip/{trip_id}` - Get trip details
+- `GET /api/trips` - Get user trip list
+- `GET /health` - Health check
+
+## 🛠️ Development
+
+```bash
+# Start services
+docker-compose up -d
+
+# Run tests
+./scripts/test_api.sh
+
+# View logs
+docker-compose logs -f gateway
 ```
-
-### Create Trip Plan
-
-**POST /api/trip/plan**
-
-Request:
-```json
-{
-  "user_id": 1,
-  "origin": "Shanghai",
-  "destination": "Hangzhou",
-  "preferences": ["nature", "history"],
-  "duration": 2
-}
-```
-
-Response:
-```json
-{
-  "trip_id": 1234567890,
-  "status": "processing"
-}
-```
-
-### Query Trip Details
-
-**GET /api/trip/{trip_id}**
-
-Response:
-```json
-{
-  "trip_id": 1234567890,
-  "status": "completed",
-  "route": {...},
-  "weather": [...],
-  "pois": [...],
-  "ai_summary": {...}
-}
-```
-
----
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/dream_trip
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Kafka
-KAFKA_BROKER=localhost:9092
-
-# Microservices
-ROUTE_SERVICE_URL=http://localhost:8001
-WEATHER_SERVICE_URL=http://localhost:8002
-POI_SERVICE_URL=http://localhost:8003
-AI_SERVICE_URL=http://localhost:8004
-```
-
----
-
-## 📚 Documentation
-
-For detailed architecture information, see [ARCHITECTURE.md](./ARCHITECTURE.md)
-
----
-
-**Built with FastAPI and Python**
+Configure API keys in `.env`:
+- `GOOGLE_MAPS_API_KEY`
+- `GOOGLE_PLACES_API_KEY`
+- `OPENWEATHER_API_KEY`
+- `GEMINI_API_KEY`

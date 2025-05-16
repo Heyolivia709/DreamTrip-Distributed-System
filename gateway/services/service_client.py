@@ -1,4 +1,4 @@
-"""微服务客户端 - 负责调用其他服务"""
+"""Microservice client - responsible for calling other services"""
 import logging
 import httpx
 from fastapi import HTTPException
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceClient:
-    """微服务客户端"""
+    """Microservice client"""
     
     def __init__(self):
         self.service_urls = {
@@ -21,18 +21,18 @@ class ServiceClient:
         }
     
     async def call_service(self, service_name: str, endpoint: str, data: dict) -> dict:
-        """Call 微服务
+        """Call microservice
         
         Args:
-            service_name: 服务名称 (route/weather/poi/ai)
-            endpoint: API端点路径
-            data: 请求数据
+            service_name: Service name (route/weather/poi/ai)
+            endpoint: API endpoint path
+            data: Request data
             
         Returns:
-            服务响应数据
+            Service response data
             
         Raises:
-            HTTPException: 服务调用失败
+            HTTPException: Service call failed
         """
         url = f"{self.service_urls[service_name]}{endpoint}"
         
@@ -55,13 +55,13 @@ class ServiceClient:
                 )
     
     async def check_service_health(self, service_name: str) -> str:
-        """Check 服务健康Status
+        """Check service health status
         
         Args:
-            service_name: 服务名称
+            service_name: Service name
             
         Returns:
-            "healthy" 或 "unhealthy"
+            "healthy" or "unhealthy"
         """
         try:
             async with httpx.AsyncClient() as client:

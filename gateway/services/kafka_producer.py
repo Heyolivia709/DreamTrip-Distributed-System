@@ -1,9 +1,15 @@
-"""Kafka 生产者服务 - 发送事件到 Kafka"""
+"""Kafka producer service - send events to Kafka"""
 import json
 import logging
 from typing import Dict, Optional
-from kafka import KafkaProducer
-from kafka.errors import KafkaError
+try:
+    from kafka import KafkaProducer
+    from kafka.errors import KafkaError
+    KAFKA_AVAILABLE = True
+except ImportError:
+    KAFKA_AVAILABLE = False
+    KafkaProducer = None
+    KafkaError = Exception
 
 from config import settings
 
@@ -12,57 +18,62 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaProducerService:
-    """Kafka 生产者服务"""
+    """Kafka producer service"""
     
     def __init__(self):
         self.producer: Optional[KafkaProducer] = None
         self._initialize_producer()
     
     def _initialize_producer(self):
-        """初始化 Kafka 生产者"""
+        """Initialize Kafka producer"""
+        if not KAFKA_AVAILABLE:
+            logger.warning("⚠️  kafka-python library unavailable, Kafka Producer will be disabled")
+            self.producer = None
+            return
+            
         try:
             self.producer = KafkaProducer(
                 bootstrap_servers=[settings.kafka_broker],
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
                 key_serializer=lambda k: k.encode('utf-8') if k else None,
-                acks='all',  # 等待所有副本确认
-                retries=3,   # 重试次数
-                max_in_flight_requests_per_connection=1,  # 保证消息顺序
-                compression_type='gzip'  # 压缩
+                acks='all',  # Wait for all replicas to confirm
+                retries=3,   # Retry count
+                max_in_flight_requests_per_connection=1,  # Ensure message order
+                compression_type='gzip'  # Compression
             )
-            logger.info(f"✅ Kafka Producer 已连接: {settings.kafka_broker}")
+            logger.info(f"✅ Kafka Producer connected: {settings.kafka_broker}")
         except Exception as e:
-            logger.warning(f"⚠️  Kafka Producer 初始化失败: {e}")
-            logger.warning("系统将在没有 Kafka 的情况下运行")
+            logger.warning(f"⚠️  Kafka Producer initialization failed: {e}")
+            logger.warning("System will run without Kafka")
             self.producer = None
     
     def send_event(
-        self, 
-        topic: str, 
-        event_type: str, 
-        data: Dict, 
+        self,
+        topic: str,
+        event_type: str,
+        data: Dict,
         key: Optional[str] = None
     ) -> bool:
-        """Send 事件到 Kafka
+        """Send event to Kafka
         
         Args:
-            topic: Kafka 主题
-            event_type: 事件类型
-            data: 事件数据
-            key: 消息键（用于分区）
+            topic: Kafka topic
+            event_type: Event type
+            data: Event data
+            key: Message key (for partitioning)
             
         Returns:
-            Return True if sent successfully，失败返回 False
+            True if sent successfully, False if failed
         """
         if not self.producer:
-            logger.warning(f"Kafka Producer 未初始化，跳过发送事件: {event_type}")
+            logger.warning(f"Kafka Producer not initialized, skipping event: {event_type}")
             return False
         
         try:
             event = {
                 "event_type": event_type,
                 "data": data,
-                "timestamp": None  # 由 Kafka 自动添加
+                "timestamp": None  # Automatically added by Kafka
             }
             
             future = self.producer.send(
@@ -71,35 +82,35 @@ class KafkaProducerService:
                 key=key
             )
             
-            # 异步发送，不阻塞
+            # Async send, non-blocking
             future.add_callback(self._on_send_success)
             future.add_errback(self._on_send_error)
             
-            logger.info(f"📤 Kafka 事件已发送: {event_type} → {topic}")
+            logger.info(f"📤 Kafka event sent: {event_type} → {topic}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ 发送 Kafka 事件失败: {e}")
+            logger.error(f"❌ Failed to send Kafka event: {e}")
             return False
     
     def _on_send_success(self, record_metadata):
-        """Send 成功回调"""
+        """Send success callback"""
         logger.debug(
-            f"✅ Kafka 消息已确认: topic={record_metadata.topic}, "
+            f"✅ Kafka message confirmed: topic={record_metadata.topic}, "
             f"partition={record_metadata.partition}, "
             f"offset={record_metadata.offset}"
         )
     
     def _on_send_error(self, exc):
-        """Send 失败回调"""
-        logger.error(f"❌ Kafka 消息发送失败: {exc}")
+        """Send failure callback"""
+        logger.error(f"❌ Kafka message send failed: {exc}")
     
     def send_trip_created_event(self, trip_id: int, trip_data: Dict) -> bool:
-        """Send 旅行计划创建事件
+        """Send trip plan created event
         
         Args:
             trip_id: Trip plan ID
-            trip_data: 旅行计划数据
+            trip_data: Trip plan data
             
         Returns:
             Return True if sent successfully
@@ -118,7 +129,7 @@ class KafkaProducerService:
         )
     
     def send_trip_completed_event(self, trip_id: int) -> bool:
-        """Send 旅行计划完成事件
+        """Send trip plan completed event
         
         Args:
             trip_id: Trip plan ID
@@ -134,11 +145,11 @@ class KafkaProducerService:
         )
     
     def send_trip_failed_event(self, trip_id: int, error: str) -> bool:
-        """Send 旅行计划失败事件
+        """Send trip plan failed event
         
         Args:
             trip_id: Trip plan ID
-            error: 错误信息
+            error: Error message
             
         Returns:
             Return True if sent successfully
@@ -154,13 +165,12 @@ class KafkaProducerService:
         )
     
     def close(self):
-        """关闭生产者"""
+        """Close producer"""
         if self.producer:
-            self.producer.flush()  # 确保所有消息都发送完成
+            self.producer.flush()  # Ensure all messages are sent
             self.producer.close()
-            logger.info("Kafka Producer 已关闭")
+            logger.info("Kafka Producer closed")
 
 
 # Singleton
 kafka_producer = KafkaProducerService()
-

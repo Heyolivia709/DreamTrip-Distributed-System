@@ -1,4 +1,4 @@
-"""旅行计划路由"""
+"""Trip planning routes"""
 import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
@@ -16,33 +16,32 @@ router = APIRouter(prefix="/api", tags=["Trip"])
 async def create_trip_plan(
     request: TripRequest, 
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    redis_client = Depends(get_redis)
+    db: Session = Depends(get_db), redis_client=Depends(get_redis)
 ):
-    """Create 旅行计划
+    """Create trip plan
     
-    1. 立即返回 trip_id 和 status=processing
-    2. 在后台异步调用各个微服务处理数据
+    1. Immediately return trip_id and status=processing
+    2. Asynchronously call microservices in background to process data
     
     Args:
-        request: 旅行计划请求（Origin、Destination、Preferences、 days数）
-        background_tasks: FastAPI 后台任务
+        request: Trip plan request (Origin, Destination, Preferences, duration)
+        background_tasks: FastAPI background tasks
         db: Database session
         redis_client: Redis client
         
     Returns:
-        TripResponse: 包含 trip_id 和初始Status
+        TripResponse: Contains trip_id and initial status
     """
     # Create service instance
     trip_service = TripService(db, redis_client)
     
-    # 1. 创建旅行计划并获取 trip_id
+    # 1. Create trip plan and get trip_id
     trip_id = trip_service.create_trip_plan(request)
     
-    # 2. 添加后台任务处理旅行计划
+    # 2. Add background task to process trip plan
     background_tasks.add_task(trip_service.process_trip_plan, trip_id, request)
     
-    # 3. 立即返回响应
+    # 3. Return response immediately
     return TripResponse(
         trip_id=trip_id,
         status="processing"
@@ -52,12 +51,11 @@ async def create_trip_plan(
 @router.get("/trip/{trip_id}", response_model=TripResponse)
 async def get_trip_plan(
     trip_id: int,
-    db: Session = Depends(get_db),
-    redis_client = Depends(get_redis)
+    db: Session = Depends(get_db), redis_client=Depends(get_redis)
 ):
-    """Get 旅行计划详情
+    """Get trip plan details
     
-    先从 Redis 缓存获取，如果没有则从数据库查询
+    First try Redis cache, then query database if not found
     
     Args:
         trip_id: Trip plan ID
@@ -65,15 +63,15 @@ async def get_trip_plan(
         redis_client: Redis client
         
     Returns:
-        TripResponse: 完整的旅行计划数据
+        TripResponse: Complete trip plan data
         
     Raises:
-        HTTPException: 404 如果旅行计划不存在
+        HTTPException: 404 if trip plan doesn't exist
     """
     # Create service instance
     trip_service = TripService(db, redis_client)
     
-    # 获取旅行计划
+    # Get trip plan
     trip_data = trip_service.get_trip_detail(trip_id)
     
     if trip_data is None:
@@ -86,26 +84,25 @@ async def get_trip_plan(
 async def get_user_trips(
     user_id: int = 1,
     limit: int = 10,
-    db: Session = Depends(get_db),
-    redis_client = Depends(get_redis)
+    db: Session = Depends(get_db), redis_client=Depends(get_redis)
 ):
-    """Get 用户的旅行计划列表
+    """Get user's trip plan list
     
-    先从数据库查询，如果失败则从 Redis 缓存获取
+    First query database, fallback to Redis cache if failed
     
     Args:
-        user_id: User ID（默认为1）
-        limit: 返回数量限制（默认为10）
+        user_id: User ID (default: 1)
+        limit: Return count limit (default: 10)
         db: Database session
         redis_client: Redis client
         
     Returns:
-        旅行计划列表
+        List of trip plans
     """
     # Create service instance
     trip_service = TripService(db, redis_client)
     
-    # 获取用户旅行列表
+    # Get user trip list
     trips = trip_service.get_user_trips(user_id, limit)
     
     return {"trips": trips}

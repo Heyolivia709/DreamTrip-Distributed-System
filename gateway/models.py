@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = "users"
     
@@ -15,6 +16,7 @@ class User(Base):
     
     # Relationships
     trip_plans = relationship("TripPlan", back_populates="user")
+
 
 class TripPlan(Base):
     __tablename__ = "trip_plans"
@@ -36,6 +38,7 @@ class TripPlan(Base):
     pois = relationship("POI", back_populates="trip_plan")
     ai_summaries = relationship("AISummary", back_populates="trip_plan")
 
+
 class Route(Base):
     __tablename__ = "routes"
     
@@ -50,6 +53,7 @@ class Route(Base):
     
     # Relationships
     trip_plan = relationship("TripPlan", back_populates="routes")
+
 
 class WeatherForecast(Base):
     __tablename__ = "weather_forecasts"
@@ -68,6 +72,7 @@ class WeatherForecast(Base):
     # Relationships
     trip_plan = relationship("TripPlan", back_populates="weather_forecasts")
 
+
 class POI(Base):
     __tablename__ = "pois"
     
@@ -85,6 +90,7 @@ class POI(Base):
     
     # Relationships
     trip_plan = relationship("TripPlan", back_populates="pois")
+
 
 class AISummary(Base):
     __tablename__ = "ai_summaries"
