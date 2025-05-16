@@ -1,32 +1,32 @@
 """
-AI Summary Service - 工具函数
+AI Summary Service - Utility Functions
 """
 from typing import List
 from models import AISummaryRequest, DayItinerary
 
 
-# Destination信息映射
+# Destination information mapping
 DESTINATION_INFO = {
-    "北京": "首都北京，拥有深厚的历史文化底蕴。必游：故宫、长城、 days坛。特色美食：北京烤鸭、炸酱面。",
-    "上海": "国际化大都市，现代与传统完美融合。必游：外滩、东方明珠、豫园。特色美食：小笼包、生煎包。",
-    "杭州": "人间 days堂，江南水乡的典型代表。必游：西湖、灵隐寺、雷峰塔。特色美食：西湖醋鱼、龙井虾仁。",
-    "成都": " days府之国，休闲之都，熊猫故乡。必游：大熊猫基地、宽窄巷子、锦里。特色美食：火锅、串串香。",
-    "西安": "古都长安，丝绸之路起点。必游：兵马俑、大雁塔、古城墙。特色美食：肉夹馍、凉皮、羊肉泡馍。"
+    "Beijing": "Capital Beijing, with profound historical and cultural heritage. Must-visit: Forbidden City, Great Wall, Temple of Heaven. Special food: Beijing Roast Duck, Zhajiangmian.",
+    "Shanghai": "International metropolis, perfect blend of modern and traditional. Must-visit: The Bund, Oriental Pearl Tower, Yu Garden. Special food: Xiaolongbao, Shengjianbao.",
+    "Hangzhou": "Paradise on earth, typical representative of Jiangnan water town. Must-visit: West Lake, Lingyin Temple, Leifeng Pagoda. Special food: West Lake Fish in Vinegar, Longjing Shrimp.",
+    "Chengdu": "Land of abundance, leisure capital, hometown of pandas. Must-visit: Giant Panda Base, Kuanzhai Alley, Jinli. Special food: Hot Pot, Chuanchuan.",
+    "Xi'an": "Ancient capital Chang'an, starting point of the Silk Road. Must-visit: Terracotta Warriors, Big Wild Goose Pagoda, Ancient City Wall. Special food: Roujiamo, Liangpi, Yangrou Paomo."
 }
 
-# Preferences关键词映射
+# Preference keywords mapping
 PREFERENCE_KEYWORDS = {
-    "自然": ["自然风光", "生态旅游", "户外活动", "清新空weather"],
-    "美食": ["特色美食", "当地小吃", "美食体验", "味蕾享受"],
-    "冒险": ["刺激体验", "挑战自我", "探险活动", "肾上腺素"],
-    "艺术": ["文化艺术", "历史古迹", "艺术展览", "文化熏陶"],
-    "历史": ["历史遗迹", "文化传承", "古迹游览", "历史故事"]
+    "nature": ["natural scenery", "eco-tourism", "outdoor activities", "fresh air"],
+    "food": ["local cuisine", "local snacks", "food experience", "culinary delight"],
+    "adventure": ["exciting experience", "challenge yourself", "adventure activities", "adrenaline"],
+    "art": ["art and culture", "historical sites", "art exhibitions", "cultural immersion"],
+    "history": ["historical relics", "cultural heritage", "ancient site visits", "historical stories"]
 }
 
 
 def get_destination_info(destination: str) -> str:
     """Get destination features"""
-    return DESTINATION_INFO.get(destination, f"{destination}是一个充满魅力的旅游Destination")
+    return DESTINATION_INFO.get(destination, f"{destination} is a charming tourist destination")
 
 
 def build_ai_prompt(request: AISummaryRequest) -> str:
@@ -35,40 +35,40 @@ def build_ai_prompt(request: AISummaryRequest) -> str:
     destination_info = get_destination_info(request.destination)
     
     prompt = f"""
-你是一位资深的旅行规划师，请为以下旅行信息生成一份专业、详细、个性化的旅行计划和Summary：
+You are a senior travel planner. Please generate a professional, detailed, and personalized travel plan and summary for the following travel information:
 
-**旅行基本信息：**
+**Basic Travel Information:**
 - Origin: {request.origin}
 - Destination: {request.destination}
 - Duration: {request.duration} days
 - Preferences: {', '.join(request.preferences)}
 
-**Destination特色：**
+**Destination Features:**
 {destination_info}
 """
     
     if request.route:
-        prompt += f"\n**交通路线：**\n距离：{request.route.get('distance')}，时间：{request.route.get('duration')}\n"
+        prompt += f"\n**Transportation Route:**\nDistance: {request.route.get('distance')}, Time: {request.route.get('duration')}\n"
     
     if request.weather:
-        prompt += "\n** daysweather预报：**\n"
+        prompt += "\n**Weather Forecast:**\n"
         for day in request.weather[:3]:
             prompt += f"- {day.get('date')}: {day.get('condition')}, {day.get('temperature_min')}°C - {day.get('temperature_max')}°C\n"
     
     if request.pois:
-        prompt += "\n**推荐景点：**\n"
+        prompt += "\n**Recommended Attractions:**\n"
         for poi in request.pois[:5]:
-            prompt += f"- {poi.get('name')} ({poi.get('category')}): 评分 {poi.get('rating')}/5星\n"
+            prompt += f"- {poi.get('name')} ({poi.get('category')}): Rating {poi.get('rating')}/5 stars\n"
     
     prompt += f"""
-请基于以上信息，为这位从{request.origin}到{request.destination}的{request.duration} days旅行者，提供：
+Based on the above information, please provide for this {request.duration}-day traveler from {request.origin} to {request.destination}:
 
-**1. 行程亮点Summary**（2-3段话）
-**2. 个性化推荐**（基于用户Preferences）
-**3. 实用旅行建议**（交通、住宿、注意事项）
-**4. 每日详细行程安排**（具体可操作）
+**1. Trip Highlights Summary** (2-3 paragraphs)
+**2. Personalized Recommendations** (based on user preferences)
+**3. Practical Travel Tips** (transportation, accommodation, precautions)
+**4. Detailed Daily Itinerary** (specific and actionable)
 
-请用中文回复，语言生动有趣，内容实用具体。
+Please reply in English, with vivid and interesting language, practical and specific content.
 """
     
     return prompt
@@ -82,27 +82,27 @@ def generate_mock_itinerary(request: AISummaryRequest) -> List[DayItinerary]:
     for day in range(1, request.duration + 1):
         day_plan = DayItinerary(
             day=day,
-            title=f"第{day} days",
+            title=f"Day {day}",
             activities=[]
         )
         
         if day == 1:
             day_plan.activities = [
-                f"上午：从{request.origin}出发",
-                "下午：到达Destination，入住酒店",
-                "晚上：品尝当地美食"
+                f"Morning: Depart from {request.origin}",
+                "Afternoon: Arrive at destination, check into hotel",
+                "Evening: Taste local cuisine"
             ]
         elif day == request.duration:
             day_plan.activities = [
-                "上午：最后游览景点",
-                "下午：购买纪念品",
-                f"晚上：返回{request.origin}"
+                "Morning: Final sightseeing",
+                "Afternoon: Buy souvenirs",
+                f"Evening: Return to {request.origin}"
             ]
         else:
             day_plan.activities = [
-                "上午：游览主要景点",
-                "下午：体验当地文化",
-                "晚上：自由活动"
+                "Morning: Visit main attractions",
+                "Afternoon: Experience local culture",
+                "Evening: Free time"
             ]
         
         itinerary.append(day_plan)
@@ -113,47 +113,47 @@ def generate_mock_itinerary(request: AISummaryRequest) -> List[DayItinerary]:
 def generate_mock_summary(request: AISummaryRequest) -> dict:
     """Generate mock AI summary"""
     
-    # 构建个性化Summary
-    summary = f"这是一次从{request.origin}到{request.destination}的{request.duration} days精彩旅行。"
+    # Build personalized summary
+    summary = f"This is an exciting {request.duration}-day trip from {request.origin} to {request.destination}."
     summary += get_destination_info(request.destination)
     
-    # 添加Preferences相关描述
+    # Add preference-related descriptions
     summary_keywords = []
     for pref in request.preferences:
         summary_keywords.extend(PREFERENCE_KEYWORDS.get(pref, []))
     
     if summary_keywords:
-        summary += f"您将体验到{', '.join(summary_keywords[:3])}等丰富多彩的活动。"
-    summary += "这次旅行将为您带来难忘的体验和珍贵的回忆。"
+        summary += f"You will experience colorful activities such as {', '.join(summary_keywords[:3])}."
+    summary += "This trip will bring you unforgettable experiences and precious memories."
     
-    # 生成推荐
-    recommendations = "基于您的Preferences，我们特别推荐：\n"
+    # Generate recommendations
+    recommendations = "Based on your preferences, we especially recommend:\n"
     for pref in request.preferences:
-        if pref == "自然":
-            recommendations += "- 前往当地自然公园，享受清新空weather和美丽风景\n"
-        elif pref == "美食":
-            recommendations += "- 品尝当地特色美食，体验地道风味\n"
-        elif pref == "冒险":
-            recommendations += "- 参加刺激的户外活动，挑战自我\n"
-        elif pref == "艺术" or pref == "历史":
-            recommendations += "- 参观博物馆和历史古迹，感受文化魅力\n"
+        if pref == "nature":
+            recommendations += "- Visit local natural parks, enjoy fresh air and beautiful scenery\n"
+        elif pref == "food":
+            recommendations += "- Taste local specialties, experience authentic flavors\n"
+        elif pref == "adventure":
+            recommendations += "- Participate in exciting outdoor activities, challenge yourself\n"
+        elif pref == "art" or pref == "history":
+            recommendations += "- Visit museums and historical sites, feel the cultural charm\n"
     
-    # 生成建议
-    tips = "旅行建议：\n"
-    tips += "- 提前预订酒店和景点门票\n"
-    tips += "- 准备适合当地weather候的衣物\n"
-    tips += "- 携带常用药品和充电设备\n"
-    tips += "- 了解当地交通方式和支付方式\n"
-    tips += "- 保持开放心态，享受旅程\n"
+    # Generate tips
+    tips = "Travel tips:\n"
+    tips += "- Book hotels and attraction tickets in advance\n"
+    tips += "- Prepare clothes suitable for local weather\n"
+    tips += "- Bring common medicines and charging devices\n"
+    tips += "- Learn about local transportation and payment methods\n"
+    tips += "- Keep an open mind and enjoy the journey\n"
     
-    # 生成行程
+    # Generate itinerary
     itinerary = generate_mock_itinerary(request)
     
     return {
         "summary": summary,
         "recommendations": recommendations,
         "tips": tips,
-        "itinerary": [day.dict() for day in itinerary]
+        "itinerary": [day.model_dump() for day in itinerary]
     }
 
 
@@ -174,20 +174,20 @@ def parse_ai_response(content: str, request: AISummaryRequest) -> tuple:
         if not line:
             continue
         
-        # 段落识别
-        if any(keyword in line for keyword in ["行程亮点", "Summary"]):
+        # Section recognition
+        if any(keyword in line for keyword in ["Trip Highlights", "Summary"]):
             current_section = "summary"
             continue
-        elif any(keyword in line for keyword in ["推荐", "建议活动"]):
+        elif any(keyword in line for keyword in ["Recommendations", "Suggested Activities"]):
             current_section = "recommendations"
             continue
-        elif any(keyword in line for keyword in ["实用", "注意事项", "旅行建议"]):
+        elif any(keyword in line for keyword in ["Practical", "Precautions", "Travel Tips"]):
             current_section = "tips"
             continue
-        elif any(keyword in line for keyword in ["行程安排", "每日行程"]):
+        elif any(keyword in line for keyword in ["Itinerary", "Daily Schedule"]):
             current_section = "itinerary"
             continue
-        elif line.startswith("第") and " days" in line:
+        elif line.startswith("Day") and "day" in line:
             current_section = "itinerary"
             current_day = DayItinerary(
                 day=len(itinerary) + 1,
@@ -197,7 +197,7 @@ def parse_ai_response(content: str, request: AISummaryRequest) -> tuple:
             itinerary.append(current_day)
             continue
         
-        # 处理内容
+        # Process content
         if current_section == "summary" and not line.startswith("**"):
             summary += line + " "
         elif current_section == "recommendations" and not line.startswith("**"):
@@ -214,7 +214,7 @@ def parse_ai_response(content: str, request: AISummaryRequest) -> tuple:
             if line.startswith("-") or line.startswith("•"):
                 current_day.activities.append(line[1:].strip())
     
-    # 如果没有解析到内容，使用默认值
+    # If no content is parsed, use default values
     if not summary:
         summary = content[:500] if len(content) > 500 else content
     if not itinerary:

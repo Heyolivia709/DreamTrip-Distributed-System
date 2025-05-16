@@ -3,7 +3,6 @@ AI Summary Service - Business Logic Layer
 """
 import json
 import logging
-from typing import Optional
 
 import redis
 
@@ -56,7 +55,7 @@ class AIService:
             "summary": result.summary,
             "recommendations": result.recommendations,
             "tips": result.tips,
-            "itinerary": [day.dict() for day in result.itinerary] if result.itinerary else []
+            "itinerary": [day.model_dump() for day in result.itinerary] if result.itinerary else []
         }
         self.redis.setex(cache_key, 86400, json.dumps(cache_data))
         
@@ -70,10 +69,8 @@ class AIService:
         system_instruction = "You are a professional travel planner who excels at creating personalized travel plans. Please respond with engaging and practical content."
         prompt = build_ai_prompt(request)
         
-        # Complete prompt
         full_prompt = f"{system_instruction}\n\n{prompt}"
-        
-        # Call Gemini API
+    
         response = self.client.generate_content(
             full_prompt,
             generation_config={
@@ -138,21 +135,31 @@ Please provide adjusted itinerary and recommendations.
                 customized_content = response.text
                 
                 return {
-                    "original_request": request.dict(),
+                    "original_request": request.model_dump(),
                     "custom_requirements": custom_requirements,
                     "customized_itinerary": customized_content
                 }
             except Exception as e:
-                logger.error(f"Gemini API error: {e}")
-                return self._generate_mock_customization(request, custom_requirements)
+                logger.error(
+                    "Gemini API error: %s", e
+                )
+                return self._generate_mock_customization(
+                    request, custom_requirements
+                )
         else:
-            return self._generate_mock_customization(request, custom_requirements)
-    
-    def _generate_mock_customization(self, request: AISummaryRequest, custom_requirements: str) -> dict:
+            return self._generate_mock_customization(
+                request, custom_requirements
+            )
+
+    def _generate_mock_customization(
+        self, request: AISummaryRequest, custom_requirements: str
+    ) -> dict:
         """Generate mock custom adjustments"""
         return {
-            "original_request": request.dict(),
+            "original_request": request.model_dump(),
             "custom_requirements": custom_requirements,
-            "customized_itinerary": f"Based on your request'{custom_requirements}', we have adjusted the itinerary.Detailed adjustments will be provided after actual deployment."
+            "customized_itinerary": (
+                f"Based on your request: '{custom_requirements}', we have adjusted "
+                "the itinerary. Detailed adjustments will be provided after actual deployment."
+            )
         }
-

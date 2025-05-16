@@ -1,5 +1,5 @@
 """
-AI Summary Service - 依赖注入
+AI Summary Service - Dependency Injection
 """
 import logging
 from typing import Optional

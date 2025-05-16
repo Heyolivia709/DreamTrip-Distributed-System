@@ -74,12 +74,12 @@ async def get_summary_templates():
     """Get summary template"""
     return {
         "templates": {
-            "nature": "自然风光探索之旅",
-            "food": "美食文化体验之旅",
-            "adventure": "刺激冒险挑战之旅",
-            "art": "文化艺术熏陶之旅"
+            "nature": "Nature exploration journey",
+            "food": "Food culture experience journey",
+            "adventure": "Exciting adventure challenge journey",
+            "art": "Art and culture immersion journey"
         },
-        "preferences": ["自然", "美食", "冒险", "艺术", "购物", "夜生活", "历史", "宗教"]
+        "preferences": ["nature", "food", "adventure", "art", "shopping", "nightlife", "history", "religion"]
     }
 
 
