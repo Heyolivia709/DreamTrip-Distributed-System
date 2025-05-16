@@ -61,7 +61,7 @@ async def health_check(db: Session = Depends(get_db)):
 
 @app.post("/weather/forecast", response_model=WeatherResponse)
 async def get_weather_forecast(request: WeatherRequest):
-    """Get  daysweather预测"""
+    """Get weather forecast"""
     try:
         service = WeatherService(get_redis())
         return await service.get_weather_forecast(request)
@@ -72,7 +72,7 @@ async def get_weather_forecast(request: WeatherRequest):
 
 @app.get("/weather/current")
 async def get_current_weather(location: str):
-    """Get 当前 daysweather"""
+    """Get current weather"""
     try:
         service = WeatherService(get_redis())
         return await service.get_current_weather(location)
@@ -83,7 +83,7 @@ async def get_current_weather(location: str):
 
 @app.get("/weather/conditions")
 async def get_weather_conditions():
-    """Get 所有可用的 daysweather条件"""
+    """Get all available weather conditions"""
     return {
         "conditions": WEATHER_CONDITIONS,
         "descriptions": WEATHER_DESCRIPTIONS
@@ -92,7 +92,7 @@ async def get_weather_conditions():
 
 @app.get("/weather/recommendations")
 async def get_weather_recommendations(location: str, activity: str):
-    """根据 daysweather和活动类型提供建议"""
+    """Provide recommendations based on weather and activity type"""
     try:
         service = WeatherService(get_redis())
         return await service.get_weather_recommendations(location, activity)

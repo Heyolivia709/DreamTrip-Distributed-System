@@ -1,5 +1,5 @@
 """
-Weather Service - 依赖注入
+Weather Service - Dependency Injection
 """
 import logging
 from typing import Optional

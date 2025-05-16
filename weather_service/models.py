@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 
 class WeatherRequest(BaseModel):
-    """ daysweather请求模型"""
+    """Weather request model"""
     location: str
-    duration: int = 3  #  days数
+    duration: int = 3  # Number of days
 
 
 class WeatherForecast(BaseModel):
@@ -23,14 +23,14 @@ class WeatherForecast(BaseModel):
 
 
 class WeatherResponse(BaseModel):
-    """ daysweather响应模型"""
+    """Weather response model"""
     location: str
     forecast: List[WeatherForecast]
     current_weather: Optional[Dict] = None
 
 
 class CurrentWeatherResponse(BaseModel):
-    """当前 daysweather响应"""
+    """Current weather response"""
     location: str
     temperature: float
     condition: str
@@ -42,7 +42,7 @@ class CurrentWeatherResponse(BaseModel):
 
 
 class WeatherRecommendationRequest(BaseModel):
-    """ daysweather建议请求"""
+    """Weather recommendation request"""
     location: str
     activity: str  # outdoor, hiking, etc.
 

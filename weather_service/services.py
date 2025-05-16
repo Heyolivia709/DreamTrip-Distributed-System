@@ -4,17 +4,12 @@ Weather Service - Business Logic Layer
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import List
 
 import httpx
 import redis
 
 from models import WeatherRequest, WeatherResponse, WeatherForecast
-from utils import (
-    generate_mock_weather,
-    generate_mock_current_weather,
-    generate_weather_recommendations
-)
+from utils import generate_weather_recommendations
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -28,7 +23,7 @@ class WeatherService:
         self.api_key = settings.openweather_api_key
     
     async def get_weather_forecast(self, request: WeatherRequest) -> WeatherResponse:
-        """Get  daysweather预测"""
+        """Get weather forecast"""
         
         # Check cache
         cache_key = f"weather:{request.location}:{request.duration}"
@@ -38,25 +33,24 @@ class WeatherService:
             logger.info(f"Weather cache hit for {cache_key}")
             return WeatherResponse(**json.loads(cached_result))
         
-        # 获取 daysweather数据
-        if self.api_key:
-            try:
-                result = await self._get_weather_from_api(request)
-            except Exception as e:
-                logger.warning(f"OpenWeather API error, using mock data: {e}")
-                result = generate_mock_weather(request.location, request.duration)
-        else:
-            logger.info("OpenWeather API key not configured, using mock data")
-            result = generate_mock_weather(request.location, request.duration)
+        # Get weather data
+        if not self.api_key:
+            raise Exception("OpenWeather API key not configured")
         
-        # Cache结果（30分钟）
-        self.redis.setex(cache_key, 1800, json.dumps(result.dict()))
+        try:
+            result = await self._get_weather_from_api(request)
+        except Exception as e:
+            logger.error(f"OpenWeather API error: {e}")
+            raise Exception(f"Failed to get weather data: {e}")
+        
+        # Cache result (30 minutes)
+        self.redis.setex(cache_key, 1800, json.dumps(result.model_dump()))
         
         logger.info(f"Weather forecast generated for {request.location}")
         return result
     
     async def _get_weather_from_api(self, request: WeatherRequest) -> WeatherResponse:
-        """从OpenWeather API获取 daysweather数据"""
+        """Get weather data from OpenWeather API"""
         
         # Get current  daysweather
         current_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -72,7 +66,7 @@ class WeatherService:
             current_response.raise_for_status()
             current_data = current_response.json()
         
-        # 获取 daysweather预报
+        # Get weather forecast
         forecast_url = "http://api.openweathermap.org/data/2.5/forecast"
         forecast_params = {
             "q": request.location,
@@ -86,7 +80,7 @@ class WeatherService:
             forecast_response.raise_for_status()
             forecast_data = forecast_response.json()
         
-        # 处理当前 daysweather
+        # Process current weather
         current_weather = {
             "temperature": current_data["main"]["temp"],
             "condition": current_data["weather"][0]["description"],
@@ -95,11 +89,11 @@ class WeatherService:
             "description": current_data["weather"][0]["description"]
         }
         
-        # 处理 daysweather预报
+        # Process weather forecast
         forecast = []
         today = datetime.now().date()
         
-        # 按日期分组预报数据
+        # Group forecast data by date
         daily_forecasts = {}
         for item in forecast_data["list"]:
             date = datetime.fromtimestamp(item["dt"]).date()
@@ -107,22 +101,22 @@ class WeatherService:
                 daily_forecasts[date] = []
             daily_forecasts[date].append(item)
         
-        # 生成每日预报
+        # Generate daily forecast
         for i in range(request.duration):
             target_date = today + timedelta(days=i)
             if target_date in daily_forecasts:
                 day_data = daily_forecasts[target_date]
                 
-                # 计算每日最高最低温度
+                # Calculate daily min/max temperature
                 temps = [item["main"]["temp"] for item in day_data]
                 temp_min = min(temps)
                 temp_max = max(temps)
                 
-                # 获取主要 daysweather条件
+                # Get main weather condition
                 conditions = [item["weather"][0]["description"] for item in day_data]
                 main_condition = max(set(conditions), key=conditions.count)
                 
-                # 计算平均湿度和风速
+                # Calculate average humidity and wind speed
                 humidity = sum(item["main"]["humidity"] for item in day_data) / len(day_data)
                 wind_speed = sum(item["wind"]["speed"] for item in day_data) / len(day_data)
                 
@@ -143,7 +137,7 @@ class WeatherService:
         )
     
     async def get_current_weather(self, location: str) -> dict:
-        """Get 当前 daysweather"""
+        """Get current weather"""
         
         cache_key = f"current_weather:{location}"
         cached_result = self.redis.get(cache_key)
@@ -152,16 +146,19 @@ class WeatherService:
             logger.info(f"Current weather cache hit for {cache_key}")
             return json.loads(cached_result)
         
-        if self.api_key:
-            # 从API获取当前 daysweather
-            url = "http://api.openweathermap.org/data/2.5/weather"
-            params = {
-                "q": location,
-                "appid": self.api_key,
-                "units": "metric",
-                "lang": "zh_cn"
-            }
-            
+        if not self.api_key:
+            raise Exception("OpenWeather API key not configured")
+        
+        # Get current weather from API
+        url = "http://api.openweathermap.org/data/2.5/weather"
+        params = {
+            "q": location,
+            "appid": self.api_key,
+            "units": "metric",
+            "lang": "en"
+        }
+        
+        try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(url, params=params)
                 response.raise_for_status()
@@ -174,27 +171,27 @@ class WeatherService:
                 "humidity": data["main"]["humidity"],
                 "wind_speed": data["wind"]["speed"],
                 "pressure": data["main"]["pressure"],
-                "visibility": data.get("visibility", 0) / 1000,  # 转换为公里
+                "visibility": data.get("visibility", 0) / 1000,  # Convert to kilometers
                 "description": data["weather"][0]["description"]
             }
-        else:
-            # 生成模拟当前 daysweather
-            result = generate_mock_current_weather(location)
+        except Exception as e:
+            logger.error(f"OpenWeather API error: {e}")
+            raise Exception(f"Failed to get current weather: {e}")
         
-        # Cache结果（10分钟）
+        # Cache result (10 minutes)
         self.redis.setex(cache_key, 600, json.dumps(result))
         
         return result
     
     async def get_weather_recommendations(self, location: str, activity: str) -> dict:
-        """根据 daysweather和活动类型提供建议"""
+        """Provide recommendations based on weather and activity type"""
         
         # Get current  daysweather
         current_weather = await self.get_current_weather(location)
         condition = current_weather["condition"]
         temperature = current_weather["temperature"]
         
-        # 根据 daysweather条件和活动类型提供建议
+        # Provide recommendations based on weather conditions and activity type
         recommendations = generate_weather_recommendations(condition, temperature, activity)
         
         return {
