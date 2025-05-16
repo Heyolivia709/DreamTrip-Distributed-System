@@ -78,10 +78,33 @@ cd dream_trip
 
 ### 2. Configure Environment Variables
 
+⚠️ **Important Security Notice**: Never commit your `.env` file to version control!
+
 ```bash
+# Copy the example file
 cp env.example .env
+
 # Edit .env and fill in your API Keys
+nano .env  # or use your preferred editor
 ```
+
+**Required API Keys:**
+- `GOOGLE_MAPS_API_KEY` - For route planning and geocoding
+- `GOOGLE_PLACES_API_KEY` - For points of interest recommendations  
+- `OPENWEATHER_API_KEY` - For weather forecast data
+- `GEMINI_API_KEY` - For AI-powered trip summaries
+
+**Get your API keys:**
+- [Google Maps API](https://developers.google.com/maps/documentation/javascript/get-api-key)
+- [Google Places API](https://developers.google.com/maps/documentation/places/web-service/get-api-key)
+- [OpenWeather API](https://openweathermap.org/api)
+- [Google Gemini API](https://ai.google.dev/gemini-api/docs/api-key)
+
+**Security Best Practices:**
+- ✅ The `.env` file is automatically ignored by Git (see `.gitignore`)
+- ✅ Only share `env.example` with other developers
+- ✅ Never commit real API keys to version control
+- ✅ Consider rotating API keys if accidentally exposed
 
 ### 3. Start Infrastructure Services
 

@@ -1,5 +1,59 @@
 # Dream Trip - Detailed Usage Guide
 
+## 🔐 Environment Setup
+
+### Environment Variables Configuration
+
+Before running the system, you need to configure your environment variables:
+
+```bash
+# Copy the example file
+cp env.example .env
+
+# Edit the .env file with your actual API keys
+nano .env
+```
+
+**Required Environment Variables:**
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `GOOGLE_MAPS_API_KEY` | Google Maps API key for route planning | ✅ |
+| `GOOGLE_PLACES_API_KEY` | Google Places API key for POI recommendations | ✅ |
+| `OPENWEATHER_API_KEY` | OpenWeather API key for weather data | ✅ |
+| `GEMINI_API_KEY` | Google Gemini API key for AI summaries | ✅ |
+| `DATABASE_URL` | PostgreSQL connection string | ✅ |
+| `REDIS_URL` | Redis connection string | ✅ |
+| `KAFKA_BROKER` | Kafka broker address | ✅ |
+
+**Example .env file:**
+```bash
+# API Keys
+GOOGLE_MAPS_API_KEY=your_actual_google_maps_api_key
+GOOGLE_PLACES_API_KEY=your_actual_google_places_api_key
+OPENWEATHER_API_KEY=your_actual_openweather_api_key
+GEMINI_API_KEY=your_actual_gemini_api_key
+
+# Database Configuration
+DATABASE_URL=postgresql://postgres:password@localhost:5432/dream_trip
+REDIS_URL=redis://localhost:6379
+
+# Kafka Configuration
+KAFKA_BROKER=localhost:9092
+
+# Service URLs (for local development)
+ROUTE_SERVICE_URL=http://localhost:8001
+WEATHER_SERVICE_URL=http://localhost:8002
+POI_SERVICE_URL=http://localhost:8003
+AI_SERVICE_URL=http://localhost:8004
+```
+
+⚠️ **Security Reminders:**
+- Never commit your `.env` file to version control
+- The `.env` file is already in `.gitignore` for protection
+- Share only `env.example` with team members
+- Rotate API keys if they're accidentally exposed
+
 ## 📊 Testing Guide
 
 ### 1. Shell Testing Script
