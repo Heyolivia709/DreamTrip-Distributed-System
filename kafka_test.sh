@@ -1,41 +1,41 @@
 #!/bin/bash
 
-echo "🧪 测试 Kafka 集成..."
+echo "🧪 Testing Kafka integration..."
 echo ""
 
-# 测试1: 创建旅行计划（会发送 Kafka 事件）
-echo "1️⃣ 创建旅行计划（将发送 Kafka 事件）..."
+# Test 1: Create travel plan (will send Kafka event)
+echo "1️⃣ Creating travel plan (will send Kafka event)..."
 RESPONSE=$(curl -s -X POST http://localhost:8000/api/trip/plan \
   -H "Content-Type: application/json" \
   -d '{
-    "origin": "杭州",
-    "destination": "苏州",
-    "preferences": ["园林", "文化"],
+    "origin": "Hangzhou",
+    "destination": "Suzhou",
+    "preferences": ["gardens", "culture"],
     "duration": 2
   }')
 
 TRIP_ID=$(echo $RESPONSE | python3 -c "import sys, json; print(json.load(sys.stdin)['trip_id'])" 2>/dev/null)
 
 if [ ! -z "$TRIP_ID" ]; then
-    echo "   ✅ 旅行计划已创建: Trip ID = $TRIP_ID"
-    echo "   📤 Kafka 事件已发送: trip_created"
+    echo "   ✅ Travel plan created: Trip ID = $TRIP_ID"
+    echo "   📤 Kafka event sent: trip_created"
 else
-    echo "   ❌ 创建失败"
+    echo "   ❌ Creation failed"
     exit 1
 fi
 
 echo ""
-echo "2️⃣ 等待后台处理（10秒）..."
+echo "2️⃣ Waiting for background processing (10 seconds)..."
 sleep 10
 
 echo ""
-echo "3️⃣ 检查 Gateway 日志中的 Kafka 事件..."
+echo "3️⃣ Checking Kafka events in Gateway logs..."
 echo ""
-tail -20 logs/gateway.log | grep -E "Kafka|事件" | tail -5
+tail -20 logs/gateway.log | grep -E "Kafka|event" | tail -5
 
 echo ""
-echo "✅ Kafka 测试完成！"
+echo "✅ Kafka test completed!"
 echo ""
-echo "💡 提示："
-echo "   - 启动消费者监听事件: python3 scripts/kafka_consumer_example.py"
-echo "   - 查看详细文档: cat KAFKA_INTEGRATION.md"
+echo "💡 Tips:"
+echo "   - Start consumer to listen for events: python3 scripts/kafka_consumer_example.py"
+echo "   - View detailed documentation: cat KAFKA_INTEGRATION.md"
